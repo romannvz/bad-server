@@ -17,6 +17,8 @@ export function setCookie(
 ) {
     props = {
         path: '/',
+        secure: window.location.protocol === 'https:',
+        sameSite: 'strict',
         ...props,
     }
 
@@ -26,17 +28,13 @@ export function setCookie(
         d.setTime(d.getTime() + exp * 1000)
         exp = props.expires = d
     }
-    if (exp && exp instanceof Date) {
-        props.expires = exp.toUTCString()
-    }
+    if (exp && exp instanceof Date) props.expires = exp.toUTCString()
     value = encodeURIComponent(value)
     let updatedCookie = name + '=' + value
     for (const propName in props) {
         updatedCookie += '; ' + propName
         const propValue = props[propName]
-        if (propValue !== true) {
-            updatedCookie += '=' + propValue
-        }
+        if (propValue !== true) updatedCookie += '=' + propValue
     }
     document.cookie = updatedCookie
 }

@@ -9,20 +9,55 @@ import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
+import {
+    apiLimiter,
+    authLimiter,
+    orderLimiter,
+    uploadLimiter,
+} from './middlewares/rate-limit'
+import helmet from 'helmet'
+import { csrfMiddleware, getCsrfToken } from './middlewares/csrf'
 
 const { PORT = 3000 } = process.env
 const app = express()
 
 app.use(cookieParser())
 
+app.use(csrfMiddleware)
+app.get('/api/csrf-token', getCsrfToken)
+
 app.use(cors())
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", 'data:', 'https:'],
+                fontSrc: ["'self'"],
+                connectSrc: ["'self'"],
+                frameAncestors: ["'none'"],
+                baseUri: ["'self'"],
+                formAction: ["'self'"],
+            },
+        },
+        crossOriginEmbedderPolicy: false,
+    })
+)
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '10kb' }))
+app.use(json({ limit: '10kb' }))
+
+app.use('/api/', apiLimiter)
+app.use('/auth/login', authLimiter)
+app.use('/auth/register', authLimiter)
+app.use('/upload', uploadLimiter)
+app.use('/order', orderLimiter)
 
 app.options('*', cors())
 app.use(routes)

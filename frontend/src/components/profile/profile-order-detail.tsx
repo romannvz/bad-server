@@ -11,22 +11,25 @@ import { getCurrentUserOrderByNumber } from '../../services/slice/profile-orders
 import { adapterOrderFromServer } from '../../utils/adapterOrderFromServer'
 import { Preloader } from '../preloader'
 import styles from './profile.module.scss'
+import DOMPurify from 'dompurify'
 
-const CloseButton = () => {
+const CloseButton = () =>
+{
     const navigate = useNavigate()
     return <Button onClick={() => navigate(-1)}>Понятно!</Button>
 }
 
-export default function ProfileOrderDetail() {
+export default function ProfileOrderDetail()
+{
     const number = useParams().number || ''
     const dispatch = useDispatch()
     const orderData = useSelector(selectOrderByNumber(+number))
     console.log(orderData)
 
-    useEffect(() => {
-        if (!orderData) {
+    useEffect(() =>
+    {
+        if (!orderData)
             dispatch(getCurrentUserOrderByNumber(number))
-        }
     }, [dispatch, orderData, number])
 
     const orderHeaders = useMemo(
@@ -71,11 +74,9 @@ export default function ProfileOrderDetail() {
                 render: (dataInfo: OrderData) => (
                     <>
                         {dataInfo.comment ? (
-                            <div
-                                dangerouslySetInnerHTML={{
-                                    __html: dataInfo.comment,
-                                }}
-                            />
+                            <div dangerouslySetInnerHTML={{
+                                __html: DOMPurify.sanitize(dataInfo.comment)
+                            }} />
                         ) : (
                             'Комментариев нет'
                         )}
@@ -86,9 +87,8 @@ export default function ProfileOrderDetail() {
         [orderData]
     )
 
-    if (!orderData) {
+    if (!orderData)
         return <Preloader />
-    }
 
     return (
         <DetailInfo

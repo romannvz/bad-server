@@ -2,10 +2,15 @@ services:
   frontend:
     build:
       context: frontend
+    ports:
+      - 5173:5173
     env_file:
       - frontend/.env
     volumes:
-      - frontend:/app/frontend/dist
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    networks:
+      - internal
 
   mongo:
     image: mongo
@@ -16,7 +21,7 @@ services:
     volumes:
       - db:/data/db
     ports:
-      - 27017:27017
+      - 27018:27017
     networks:
       - internal
 
@@ -42,7 +47,6 @@ services:
     ports:
       - 80:80
     volumes:
-      - frontend:/var/app
       - public:/var/public
     depends_on:
       - frontend

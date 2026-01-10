@@ -5,7 +5,8 @@ interface FileInputProps
     extends DetailedHTMLProps<
         InputHTMLAttributes<HTMLInputElement>,
         HTMLInputElement
-    > {
+    >
+{
     onChange: (evt: React.ChangeEvent<HTMLInputElement>) => void
     label?: string
     extraClass?: string
@@ -20,15 +21,49 @@ const FileInput = ({
     extraClass,
     inputRef,
     ...props
-}: FileInputProps) => {
+}: FileInputProps) =>
+{
     const id = useId()
+
+    const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
+    {
+        const file = evt.target.files?.[0];
+
+        if (file)
+        {
+            if (file.size > 5 * 1024 * 1024)
+            {
+                alert('Maximum file size is 5MB');
+                evt.target.value = '';
+                return;
+            }
+
+            const allowedTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/svg+xml',
+                'image/webp'
+            ];
+
+            if (!allowedTypes.includes(file.type))
+            {
+                alert('Allow only image files (jpeg, png, gif, svg, webp)');
+                evt.target.value = '';
+                return;
+            }
+        }
+
+        onChange(evt);
+    }
+
     return (
         <label htmlFor={id} className={styles.form__field}>
             <input
                 id={id}
                 ref={inputRef}
                 className={clsx(styles.form__file)}
-                onChange={onChange}
+                onChange={handleChange}
                 type='file'
                 {...props}
             />

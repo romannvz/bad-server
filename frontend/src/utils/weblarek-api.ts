@@ -33,6 +33,7 @@ export type ApiListResponse<Type> = {
 class Api {
     private readonly baseUrl: string
     protected options: RequestInit
+    private csrfToken: string = ''
 
     constructor(baseUrl: string, options: RequestInit = {}) {
         this.baseUrl = baseUrl
@@ -41,23 +42,47 @@ class Api {
                 ...((options.headers as object) ?? {}),
             },
         }
+        this.fetchCsrfToken()
+    }
+
+    private async fetchCsrfToken() {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/csrf-token`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+            const data = await response.json()
+            this.csrfToken = data.csrfToken
+        } catch (error) {
+            console.error('Failed to fetch CSRF token:', error)
+        }
     }
 
     protected handleResponse<T>(response: Response): Promise<T> {
-        return response.ok
-            ? response.json()
-            : response
-                  .json()
-                  .then((err) =>
-                      Promise.reject({ ...err, statusCode: response.status })
-                  )
+        if (!response.ok)
+            return Promise.reject({
+                statusCode: response.status,
+                message: 'Произошла ошибка при выполнении запроса',
+            })
+
+        return response.json()
     }
 
     protected async request<T>(endpoint: string, options: RequestInit) {
+        const headers = {
+            ...this.options.headers,
+            ...options.headers,
+        }
+
+        if (options.method && !['GET', 'HEAD'].includes(options.method))
+            headers['X-CSRF-Token'] = this.csrfToken
+
         try {
             const res = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...this.options,
                 ...options,
+                headers,
+                credentials: 'include',
             })
             return await this.handleResponse<T>(res)
         } catch (error) {
@@ -80,9 +105,7 @@ class Api {
             return await this.request<T>(endpoint, options)
         } catch (error) {
             const refreshData = await this.refreshToken()
-            if (!refreshData.success) {
-                return Promise.reject(refreshData)
-            }
+            if (!refreshData.success) return Promise.reject(refreshData)
             setCookie('accessToken', refreshData.accessToken)
             return await this.request<T>(endpoint, {
                 ...options,

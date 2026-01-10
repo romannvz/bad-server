@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { Request, Express } from 'express'
 import multer, { FileFilterCallback } from 'multer'
 import { join } from 'path'
@@ -27,7 +28,10 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, file.originalname)
+        cb(
+            null,
+            `${randomUUID()}${file.originalname.substring(file.originalname.lastIndexOf('.')).toLowerCase()}`
+        )
     },
 })
 
@@ -51,4 +55,11 @@ const fileFilter = (
     return cb(null, true)
 }
 
-export default multer({ storage, fileFilter })
+export default multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 1,
+    },
+})
