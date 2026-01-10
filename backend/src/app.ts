@@ -9,13 +9,22 @@ import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
+import { apiLimiter } from './middlewares/rate-limit'
 
 const { PORT = 3000 } = process.env
 const app = express()
 
 app.use(cookieParser())
 
-app.use(cors())
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173'
+
+app.use(
+    cors({
+        origin: CORS_ORIGIN,
+        credentials: true,
+    })
+)
+
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 
@@ -23,6 +32,8 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true, limit: '10kb' }))
 app.use(json({ limit: '10kb' }))
+
+app.use('/api/', apiLimiter);
 
 app.options('*', cors())
 app.use(routes)

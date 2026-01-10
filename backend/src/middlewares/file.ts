@@ -1,3 +1,4 @@
+import fs from 'fs'
 import { randomUUID } from 'crypto'
 import { Request, Express } from 'express'
 import multer, { FileFilterCallback } from 'multer'
@@ -12,15 +13,16 @@ const storage = multer.diskStorage({
         _file: Express.Multer.File,
         cb: DestinationCallback
     ) => {
-        cb(
-            null,
-            join(
-                __dirname,
-                process.env.UPLOAD_PATH_TEMP
-                    ? `../public/${process.env.UPLOAD_PATH_TEMP}`
-                    : '../public'
-            )
+        const dest = join(
+            __dirname,
+            process.env.UPLOAD_PATH_TEMP
+                ? `../public/${process.env.UPLOAD_PATH_TEMP}`
+                : '../public/temp'
         )
+
+        if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
+
+        cb(null, dest)
     },
 
     filename: (
@@ -28,10 +30,7 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(
-            null,
-            `${randomUUID()}${file.originalname.substring(file.originalname.lastIndexOf('.')).toLowerCase()}`
-        )
+        cb(null, `${randomUUID()}.${file.mimetype.split('/')[1] || 'bin'}`)
     },
 })
 

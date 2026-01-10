@@ -4,7 +4,6 @@ import path from 'path'
 
 export default function serveStatic(baseDir: string) {
     return (req: Request, res: Response, next: NextFunction) => {
-        // Определяем полный путь к запрашиваемому файлу
         const normalizedPath = path
             .normalize(req.path)
             .replace(/^(\.\.[\/\\])+/, '')
@@ -14,27 +13,25 @@ export default function serveStatic(baseDir: string) {
         if (relative.startsWith('..') || path.isAbsolute(relative))
             return next()
 
-        // Проверяем, существует ли файл
+        const allowedExt = [
+            '.jpg',
+            '.jpeg',
+            '.png',
+            '.gif',
+            '.svg',
+            '.webp',
+            '.css',
+            '.js',
+            '.html',
+        ]
+
+        if (!allowedExt.includes(path.extname(filePath).toLowerCase()))
+            return next()
+
         fs.access(filePath, fs.constants.F_OK, (err) => {
             if (err) return next()
-            const ext = path.extname(filePath).toLowerCase()
-            const allowedExtensions = [
-                '.jpg',
-                '.jpeg',
-                '.png',
-                '.gif',
-                '.svg',
-                '.webp',
-                '.css',
-                '.js',
-                '.html',
-            ]
-
-            if (!allowedExtensions.includes(ext)) return next()
-            return res.sendFile(filePath, (err) => {
-                if (err) {
-                    next(err)
-                }
+            return res.sendFile(filePath, () => {
+                if (err) next(err)
             })
         })
     }

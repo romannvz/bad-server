@@ -19,8 +19,8 @@ export const getOrders = async (
     try {
         const {
             page = 1,
-            limit = 10,
-            sortField = 'createdAt',
+            // limit = 10,
+            // sortField = 'createdAt',
             sortOrder = 'desc',
             status,
             totalAmountFrom,
@@ -30,14 +30,26 @@ export const getOrders = async (
             search,
         } = req.query
 
+        let limit = Number(req.query.limit) || 10
+        limit = Math.min(limit, 10)
+
+        const allowedSortFields = ['createdAt', 'totalAmount', 'orderNumber']
+        let sortField = req.query.sortField as string
+        if (!allowedSortFields.includes(sortField)) {
+            sortField = 'createdAt'
+        }
+
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
-            if (typeof status === 'object') {
-                Object.assign(filters, status)
-            }
-            if (typeof status === 'string') {
-                filters.status = status
+            const allowedStatuses = [
+                'cancelled',
+                'completed',
+                'new',
+                'delivering',
+            ]
+            if (!allowedStatuses.includes(status as string)) {
+                return next(new BadRequestError('Невалидный статус'))
             }
         }
 
