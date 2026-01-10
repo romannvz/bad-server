@@ -26,25 +26,37 @@ app.use(cookieParser())
 app.use(csrfMiddleware)
 app.get('/api/csrf-token', getCsrfToken)
 
-app.use(cors())
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", 'data:', 'https:'],
-                fontSrc: ["'self'"],
-                connectSrc: ["'self'"],
-                frameAncestors: ["'none'"],
-                baseUri: ["'self'"],
-                formAction: ["'self'"],
+const corsOptions = {
+    origin:
+        process.env.NODE_ENV === 'production'
+            ? process.env.ALLOWED_ORIGINS?.split(',') || true
+            : true,
+    credentials: true,
+    optionsSuccessStatus: 200,
+}
+
+app.use(cors(corsOptions))
+
+if (process.env.NODE_ENV === 'production')
+    app.use(
+        helmet({
+            contentSecurityPolicy: {
+                directives: {
+                    defaultSrc: ["'self'"],
+                    scriptSrc: ["'self'", "'unsafe-inline'"],
+                    styleSrc: ["'self'", "'unsafe-inline'"],
+                    imgSrc: ["'self'", 'data:', 'https:'],
+                    fontSrc: ["'self'"],
+                    connectSrc: ["'self'"],
+                    frameAncestors: ["'none'"],
+                    baseUri: ["'self'"],
+                    formAction: ["'self'"],
+                },
             },
-        },
-        crossOriginEmbedderPolicy: false,
-    })
-)
+            crossOriginEmbedderPolicy: false,
+        })
+    )
+else app.use(helmet())
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 

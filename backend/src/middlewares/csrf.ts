@@ -14,9 +14,18 @@ export const csrfMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (req.method === 'GET') return next()
-
-    return csrfProtection(req, res, next)
+    const excludedPaths = [
+        '/auth/login',
+        '/auth/register', 
+        '/auth/token',
+        '/auth/logout'
+    ];
+    
+    if (excludedPaths.includes(req.path)) return next();
+    
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+    
+    return csrfProtection(req, res, next);
 }
 
 export const getCsrfToken = (req: Request, res: Response) =>

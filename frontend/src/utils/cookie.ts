@@ -17,8 +17,8 @@ export function setCookie(
 ) {
     props = {
         path: '/',
-        secure: window.location.protocol === 'https:',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
         ...props,
     }
 
