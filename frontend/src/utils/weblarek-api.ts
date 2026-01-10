@@ -44,13 +44,13 @@ class Api {
     }
 
     protected handleResponse<T>(response: Response): Promise<T> {
-        return response.ok
-            ? response.json()
-            : response
-                  .json()
-                  .then((err) =>
-                      Promise.reject({ ...err, statusCode: response.status })
-                  )
+        if (!response.ok)
+            return Promise.reject({
+                statusCode: response.status,
+                message: 'Произошла ошибка при выполнении запроса',
+            })
+
+        return response.json()
     }
 
     protected async request<T>(endpoint: string, options: RequestInit) {

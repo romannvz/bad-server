@@ -1,6 +1,7 @@
 import OpenInNewIcon from '@assets/open_in_new.svg?react'
 import Button from '@components/button'
 import DetailInfo from '@components/detail-info'
+import DOMPurify from 'dompurify'
 import { OrderData } from '@slices/orders/type'
 import { useActionCreators, useDispatch, useSelector } from '@store/hooks'
 import { StatusType } from '@types'
@@ -15,11 +16,13 @@ import { adapterOrderFromServer } from '../../utils/adapterOrderFromServer'
 import { Preloader } from '../preloader'
 import styles from './admin.module.scss'
 
-const ActionsButton = () => {
+const ActionsButton = () =>
+{
     const number = useParams().number || ''
     const navigate = useNavigate()
     const { updateOrderById } = useActionCreators(ordersActions)
-    const handleUpdateOrder = (status: StatusType) => {
+    const handleUpdateOrder = (status: StatusType) =>
+    {
         updateOrderById({ status, orderNumber: number })
         navigate(-1)
     }
@@ -47,14 +50,17 @@ const ActionsButton = () => {
     )
 }
 
-export default function AdminOrderDetail() {
+export default function AdminOrderDetail()
+{
     const navigate = useNavigate()
     const number = useParams().number || ''
     const dispatch = useDispatch()
     const orderData = useSelector(selectOrderByNumber(+number))
 
-    useEffect(() => {
-        if (!orderData) {
+    useEffect(() =>
+    {
+        if (!orderData)
+        {
             dispatch(getOrderByNumber(number))
         }
     }, [dispatch, orderData, number])
@@ -101,11 +107,9 @@ export default function AdminOrderDetail() {
                 extraClass: styles.profile__gridRowFullWidth,
                 render: (dataInfo: OrderData) => (
                     <>
-                        <div
-                            dangerouslySetInnerHTML={{
-                                __html: dataInfo.comment,
-                            }}
-                        />
+                        <div dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(dataInfo.comment)
+                        }} />
                     </>
                 ),
             },
@@ -127,7 +131,8 @@ export default function AdminOrderDetail() {
         [orderData]
     )
 
-    if (!orderData) {
+    if (!orderData)
+    {
         return <Preloader />
     }
 

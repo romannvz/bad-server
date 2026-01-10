@@ -21,8 +21,8 @@ app.use(cors())
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '10kb' }))
+app.use(json({ limit: '10kb' }))
 
 app.options('*', cors())
 app.use(routes)

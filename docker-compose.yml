@@ -6,6 +6,8 @@ services:
       - frontend/.env
     volumes:
       - frontend:/app/frontend/dist
+    ports:
+      - "5173:5173"
 
   mongo:
     image: mongo
