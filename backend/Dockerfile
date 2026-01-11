@@ -1,5 +1,6 @@
 FROM node:22-alpine
 RUN mkdir /app
+RUN mkdir -p /app/src/public/temp /app/src/public/uploads
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci

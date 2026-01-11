@@ -50,6 +50,12 @@ if (!fs.existsSync(altTempDir)) {
     console.log(`Created alternative temp directory: ${altTempDir}`)
 }
 
+const anotherTempDir = '/tmp/uploads'
+if (!fs.existsSync(anotherTempDir)) {
+    fs.mkdirSync(anotherTempDir, { recursive: true })
+    console.log(`Created another temp directory: ${anotherTempDir}`)
+}
+
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 
