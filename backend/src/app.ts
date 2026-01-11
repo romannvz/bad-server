@@ -5,6 +5,7 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
+import fs from 'fs'
 import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
@@ -29,6 +30,19 @@ app.use(
         credentials: true,
     })
 )
+
+const tempDir = path.join(process.cwd(), 'public', 'temp')
+const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true })
+    console.log(`Created temp directory: ${tempDir}`)
+}
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true })
+    console.log(`Created upload directory: ${uploadDir}`)
+}
 
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
