@@ -9,7 +9,12 @@ import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
-import { apiLimiter } from './middlewares/rate-limit'
+import {
+    apiLimiter,
+    authLimiter,
+    orderLimiter,
+    uploadLimiter,
+} from './middlewares/rate-limit'
 
 const { PORT = 3000 } = process.env
 const app = express()
@@ -33,7 +38,12 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 app.use(urlencoded({ extended: true, limit: '10kb' }))
 app.use(json({ limit: '10kb' }))
 
-app.use('/api/', apiLimiter);
+app.use(apiLimiter)
+
+app.use('/auth/login', authLimiter)
+app.use('/auth/register', authLimiter)
+app.use('/upload', uploadLimiter)
+app.use('/order', orderLimiter)
 
 app.options('*', cors())
 app.use(routes)
