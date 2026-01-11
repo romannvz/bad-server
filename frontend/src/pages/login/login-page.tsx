@@ -9,7 +9,8 @@ import { userActions } from '../../services/slice/user'
 import { AppRoute } from '../../utils/constants'
 import { LoginFormValues } from './helpers/types'
 import styles from './login-page.module.scss'
-export default function LoginPage() {
+export default function LoginPage()
+{
     const formRef = useRef<HTMLFormElement>(null)
     const { values, handleChange, errors, isValid } =
         useFormWithValidation<LoginFormValues>(
@@ -18,11 +19,12 @@ export default function LoginPage() {
         )
     const { loginUser } = useActionCreators(userActions)
 
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         loginUser(values)
-            .unwrap()
-            .catch((err) => {
+            .catch((err) =>
+            {
                 toast.error(err.message)
             })
     }

@@ -28,12 +28,19 @@ export const useActionCreators = <Actions extends ActionCreatorsMapObject>(
 ): BoundActions<Actions> => {
     const dispatch = useDispatch()
 
-    return useMemo(() => bindActionCreators(actions, dispatch), [])
+    return useMemo(
+        () => bindActionCreators(actions, dispatch) as BoundActions<Actions>,
+        [actions, dispatch]
+    )
 }
 
 export type BoundActions<Actions extends ActionCreatorsMapObject> = {
-    [key in keyof Actions]: Actions[key] extends AsyncThunk<any, any, any>
-        ? BoundAsyncThunk<Actions[key]>
+    [key in keyof Actions]: Actions[key] extends AsyncThunk<
+        infer ReturnType,
+        infer Args,
+        infer _Config
+    >
+        ? (...args: Args[]) => Promise<ReturnType>
         : Actions[key]
 }
 

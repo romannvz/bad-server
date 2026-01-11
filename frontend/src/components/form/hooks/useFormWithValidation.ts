@@ -23,8 +23,8 @@ export default function useFormWithValidation<T>(
 
     const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
         const input = evt.target
-        const value = input.value
-        const name = input.name
+        const { value } = input
+        const { name } = input
         setValues({ ...values, [name]: value })
         setErrors({ ...errors, [name]: input.validationMessage })
         const form = input.closest('form')

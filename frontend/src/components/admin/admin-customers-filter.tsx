@@ -1,6 +1,7 @@
 import { useActionCreators, useDispatch, useSelector } from '@store/hooks'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import {
+import
+{
     customersActions,
     customersSelector,
 } from '../../services/slice/customers'
@@ -10,7 +11,8 @@ import Filter from '../filter'
 import styles from './admin.module.scss'
 import { customersFilterFields } from './helpers/customersFilterFields'
 
-export default function AdminFilterCustomers() {
+export default function AdminFilterCustomers()
+{
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const [_, setSearchParams] = useSearchParams()
@@ -18,16 +20,18 @@ export default function AdminFilterCustomers() {
     const filterCustomersOption = useSelector(
         customersSelector.selectFilterOption
     )
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
-    const handleFilter = (filters: Record<string, any>) => {
+    const handleFilter = (filters: Record<string, string | number | { value: string | number }>) =>
+    {
         dispatch(updateFilter({ ...filters }))
         const queryParams: { [key: string]: string } = {}
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) {
+        Object.entries(filters).forEach(([key, value]) =>
+        {
+            if (value)
                 queryParams[key] =
-                    typeof value === 'object' ? value.value : value.toString()
-            }
+                    typeof value === 'object' && value !== null && 'value' in value
+                        ? value.value.toString()
+                        : value.toString()
         })
         setSearchParams(queryParams)
         navigate(
@@ -37,7 +41,8 @@ export default function AdminFilterCustomers() {
         )
     }
 
-    const handleClearFilters = () => {
+    const handleClearFilters = () =>
+    {
         dispatch(clearFilters())
         setSearchParams({})
         dispatch(fetchCustomersWithFilters({}))

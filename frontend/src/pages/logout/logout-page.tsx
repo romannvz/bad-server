@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom'
 import { useActionCreators } from '../../services/hooks'
 import { userActions } from '../../services/slice/user'
 import styles from './logout-page.module.scss'
-export default function LogoutPage() {
+export default function LogoutPage()
+{
     const { logoutUser, resetUser } = useActionCreators(userActions)
     const navigate = useNavigate()
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         logoutUser()
-            .unwrap()
             .then(() => resetUser())
     }
 

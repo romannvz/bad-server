@@ -14,14 +14,12 @@ export const useEnterSubmit = ({
         if (!placeholderEl) return
 
         const handleEnterKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Enter') {
-                onChange((isOpen: boolean) => !isOpen)
-            }
+            if (event.key === 'Enter') onChange((isOpen: boolean) => !isOpen)
         }
         placeholderEl.addEventListener('keydown', handleEnterKeyDown)
 
         return () => {
             placeholderEl.removeEventListener('keydown', handleEnterKeyDown)
         }
-    }, [])
+    }, [onChange, placeholderRef])
 }

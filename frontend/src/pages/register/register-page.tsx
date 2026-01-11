@@ -9,7 +9,8 @@ import { userActions } from '../../services/slice/user'
 import { AppRoute } from '../../utils/constants'
 import { RegisterFormValues } from './helpers/types'
 import styles from './register-page.module.scss'
-export default function RegisterPage() {
+export default function RegisterPage()
+{
     const formRef = useRef<HTMLFormElement>(null)
     const { values, handleChange, errors, isValid } =
         useFormWithValidation<RegisterFormValues>(
@@ -18,11 +19,12 @@ export default function RegisterPage() {
         )
     const { registerUser } = useActionCreators(userActions)
 
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         registerUser(values)
-            .unwrap()
-            .catch((err) => {
+            .catch((err) =>
+            {
                 toast.error(err.message)
             })
     }

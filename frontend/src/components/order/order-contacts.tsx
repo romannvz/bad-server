@@ -10,14 +10,16 @@ import { ContactsFormValues } from './helpers/types'
 
 import { useActionCreators, useSelector } from '../../services/hooks'
 import { basketActions } from '../../services/slice/basket'
-import {
+import
+{
     orderFormActions,
     orderFormSelector,
 } from '../../services/slice/orderForm'
 import EditorInput from '../editor-text/editor-input'
 import styles from './order.module.scss'
 
-export function OrderContacts() {
+export function OrderContacts()
+{
     const location = useLocation()
     const navigate = useNavigate()
     const { selectOrderInfo } = orderFormSelector
@@ -32,25 +34,26 @@ export function OrderContacts() {
             formRef.current
         )
 
-    useEffect(() => {
+    useEffect(() =>
+    {
         // восстанавливаем значение формы из стора
         setValuesForm({
             email: orderPersistData.email,
             phone: orderPersistData.phone,
         })
-    }, [orderPersistData])
+    }, [orderPersistData, setValuesForm])
 
-    const handleEditInputChange = (value: string) => {
+    const handleEditInputChange = (value: string) =>
         setValuesForm({ ...values, comment: value })
-    }
 
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         setInfo(values)
         // т.к. на момент отправки запроса данные введенные в поля еще не записаны в store, добавляем в запрос их вручную
         createOrder({ ...orderPersistData, ...values })
-            .unwrap()
-            .then((dataResponse) => {
+            .then((dataResponse) =>
+            {
                 resetBasket()
                 navigate(
                     { pathname: AppRoute.OrderSuccess },

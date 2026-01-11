@@ -1,10 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import sanitizeHtml from 'sanitize-html'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
+import { safeSearchRegex } from '../utils/safeSearchRegex'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -17,8 +19,8 @@ export const getOrders = async (
     try {
         const {
             page = 1,
-            limit = 10,
-            sortField = 'createdAt',
+            // limit = 10,
+            // sortField = 'createdAt',
             sortOrder = 'desc',
             status,
             totalAmountFrom,
@@ -28,14 +30,26 @@ export const getOrders = async (
             search,
         } = req.query
 
+        let limit = Number(req.query.limit) || 10
+        limit = Math.min(limit, 10)
+
+        const allowedSortFields = ['createdAt', 'totalAmount', 'orderNumber']
+        let sortField = req.query.sortField as string
+        if (!allowedSortFields.includes(sortField)) {
+            sortField = 'createdAt'
+        }
+
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
-            if (typeof status === 'object') {
-                Object.assign(filters, status)
-            }
-            if (typeof status === 'string') {
-                filters.status = status
+            const allowedStatuses = [
+                'cancelled',
+                'completed',
+                'new',
+                'delivering',
+            ]
+            if (!allowedStatuses.includes(status as string)) {
+                return next(new BadRequestError('Невалидный статус'))
             }
         }
 
@@ -90,7 +104,7 @@ export const getOrders = async (
         ]
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            const searchRegex = safeSearchRegex(search as string)
             const searchNumber = Number(search)
 
             const searchConditions: any[] = [{ 'products.title': searchRegex }]
@@ -185,7 +199,7 @@ export const getOrdersCurrentUser = async (
 
         if (search) {
             // если не экранировать то получаем Invalid regular expression: /+1/i: Nothing to repeat
-            const searchRegex = new RegExp(search as string, 'i')
+            const searchRegex = safeSearchRegex(search as string)
             const searchNumber = Number(search)
             const products = await Product.find({ title: searchRegex })
             const productIds = products.map((product) => product._id)
@@ -309,13 +323,20 @@ export const createOrder = async (
             return next(new BadRequestError('Неверная сумма заказа'))
         }
 
+        const sanitizedComment = comment
+            ? sanitizeHtml(comment, {
+                  allowedTags: [],
+                  allowedAttributes: {},
+              })
+            : ''
+
         const newOrder = new Order({
             totalAmount: total,
             products: items,
             payment,
             phone,
             email,
-            comment,
+            comment: sanitizedComment,
             customer: userId,
             deliveryAddress: address,
         })
@@ -370,7 +391,9 @@ export const deleteOrder = async (
     next: NextFunction
 ) => {
     try {
-        const deletedOrder = await Order.findByIdAndDelete(req.params.id)
+        const deletedOrder = await Order.findOneAndDelete({
+            orderNumber: req.params.orderNumber,
+        })
             .orFail(
                 () =>
                     new NotFoundError(

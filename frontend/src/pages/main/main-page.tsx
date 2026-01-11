@@ -4,16 +4,19 @@ import { Link } from 'react-router-dom'
 import Card from '../../components/card/card'
 import Gallery from '../../components/gallery/gallery'
 import { useActionCreators } from '../../services/hooks'
-import {
-    productsActions,
-    productsSelector,
-} from '../../services/slice/products'
+import
+    {
+        productsActions,
+        productsSelector,
+    } from '../../services/slice/products'
 
-export default function MainPage() {
+export default function MainPage()
+{
     const { getProducts } = useActionCreators(productsActions)
-    useEffect(() => {
+    useEffect(() =>
+    {
         getProducts({ limit: 20 })
-    }, [])
+    }, [getProducts])
 
     const products = useSelector(productsSelector.selectProducts)
 

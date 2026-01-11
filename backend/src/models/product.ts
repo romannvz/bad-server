@@ -1,6 +1,9 @@
 import { unlink } from 'fs'
 import mongoose, { Document } from 'mongoose'
 import { join } from 'path'
+import { promisify } from 'util'
+
+const unlinkAsync = promisify(unlink)
 
 export interface IFile {
     fileName: string
@@ -54,18 +57,23 @@ cardsSchema.pre('findOneAndUpdate', async function deleteOldImage() {
     const updateImage = this.getUpdate().$set?.image
     const docToUpdate = await this.model.findOne(this.getQuery())
     if (updateImage && docToUpdate) {
-        unlink(
-            join(__dirname, `../public/${docToUpdate.image.fileName}`),
-            (err) => console.log(err)
-        )
+        try {
+            await unlinkAsync(
+                join(__dirname, `../public/${docToUpdate.image.fileName}`)
+            )
+        } catch (err) {
+            console.log('Error deleting old image:', err)
+        }
     }
 })
 
 // Можно лучше: удалять файл с изображением после удаление сущности
 cardsSchema.post('findOneAndDelete', async (doc: IProduct) => {
-    unlink(join(__dirname, `../public/${doc.image.fileName}`), (err) =>
-        console.log(err)
-    )
+    try {
+        await unlinkAsync(join(__dirname, `../public/${doc.image.fileName}`))
+    } catch (err) {
+        console.log('Error deleting image:', err)
+    }
 })
 
 export default mongoose.model<IProduct>('product', cardsSchema)

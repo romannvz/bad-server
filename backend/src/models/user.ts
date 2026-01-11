@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import mongoose, { Document, HydratedDocument, Model, Types } from 'mongoose'
 import validator from 'validator'
-import md5 from 'md5'
 
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../config'
 import UnauthorizedError from '../errors/unauthorized-error'
@@ -105,7 +105,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
         // Возможно удаление пароля в контроллере создания, т.к. select: false не работает в случае создания сущности https://mongoosejs.com/docs/api/document.html#Document.prototype.toJSON()
         toJSON: {
             virtuals: true,
-            transform: (_doc, ret) => {
+            transform: (_doc, ret: any) => {
                 delete ret.tokens
                 delete ret.password
                 delete ret._id
@@ -119,9 +119,8 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
 // Возможно добавление хеша в контроллере регистрации
 userSchema.pre('save', async function hashingPassword(next) {
     try {
-        if (this.isModified('password')) {
-            this.password = md5(this.password)
-        }
+        if (this.isModified('password') && !this.password.startsWith('$2'))
+            this.password = await bcrypt.hash(this.password, 10)
         next()
     } catch (error) {
         next(error as Error)
@@ -178,16 +177,28 @@ userSchema.statics.findUserByCredentials = async function findByCredentials(
     email: string,
     password: string
 ) {
-    const user = await this.findOne({ email })
-        .select('+password')
-        .orFail(() => new UnauthorizedError('Неправильные почта или пароль'))
-    const passwdMatch = md5(password) === user.password
-    if (!passwdMatch) {
-        return Promise.reject(
-            new UnauthorizedError('Неправильные почта или пароль')
-        )
+    if (!validator.isEmail(email))
+        throw new UnauthorizedError('Неправильные почта или пароль')
+
+    const user = await this.findOne({
+        email: validator.normalizeEmail(email),
+    }).select('+password')
+
+    if (!user || !user.password)
+        throw new UnauthorizedError('Неправильные почта или пароль')
+
+    const passwdMatch = await bcrypt.compare(password, user.password)
+    if (passwdMatch) return user
+
+    const md5Hash = crypto.createHash('md5').update(password).digest('hex')
+    if (md5Hash === user.password) {
+        const bcryptHash = await bcrypt.hash(password, 10)
+        user.password = bcryptHash
+        await user.save()
+        return user
     }
-    return user
+
+    throw new UnauthorizedError('Неправильные почта или пароль')
 }
 
 userSchema.methods.calculateOrderStats = async function calculateOrderStats() {

@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery } from 'mongoose'
+import sanitize from 'mongo-sanitize'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
+import { safeSearchRegex } from '../utils/safeSearchRegex'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -15,7 +17,7 @@ export const getCustomers = async (
     try {
         const {
             page = 1,
-            limit = 10,
+            // limit = 10,
             sortField = 'createdAt',
             sortOrder = 'desc',
             registrationDateFrom,
@@ -28,6 +30,9 @@ export const getCustomers = async (
             orderCountTo,
             search,
         } = req.query
+
+        let limit = Number(req.query.limit) || 10
+        limit = Math.min(limit, 10)
 
         const filters: FilterQuery<Partial<IUser>> = {}
 
@@ -92,7 +97,7 @@ export const getCustomers = async (
         }
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            const searchRegex = safeSearchRegex(search as string)
             const orders = await Order.find(
                 {
                     $or: [{ deliveryAddress: searchRegex }],
@@ -161,7 +166,7 @@ export const getCustomerById = async (
     next: NextFunction
 ) => {
     try {
-        const user = await User.findById(req.params.id).populate([
+        const user = await User.findById(sanitize(req.params.id)).populate([
             'orders',
             'lastOrder',
         ])
@@ -180,7 +185,7 @@ export const updateCustomer = async (
 ) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
+            sanitize(req.params.id),
             req.body,
             {
                 new: true,
@@ -207,7 +212,9 @@ export const deleteCustomer = async (
     next: NextFunction
 ) => {
     try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id).orFail(
+        const deletedUser = await User.findByIdAndDelete(
+            sanitize(req.params.id)
+        ).orFail(
             () =>
                 new NotFoundError(
                     'Пользователь по заданному id отсутствует в базе'

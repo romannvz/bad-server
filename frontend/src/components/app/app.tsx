@@ -1,11 +1,12 @@
-import {
-    BrowserRouter,
-    Route,
-    Routes,
-    To,
-    useLocation,
-    useNavigate,
-} from 'react-router-dom'
+import
+    {
+        BrowserRouter,
+        Route,
+        Routes,
+        To,
+        useLocation,
+        useNavigate,
+    } from 'react-router-dom'
 import '../../index.scss'
 import styles from './app.module.scss'
 
@@ -25,7 +26,7 @@ import Order, {
     OrderAddress,
     OrderContacts,
     OrderSuccess,
-} from '@components/order'
+} from '@components/order/exports'
 import ProfileOrders from '@components/profile/profile-orders'
 import ProtectedRoute from '@components/protected-route/protected-route'
 import { AppRoute } from '@constants'
@@ -58,15 +59,16 @@ const App = () => (
 
 export default App
 
-const RouteComponent = () => {
+const RouteComponent = () =>
+{
     const location = useLocation()
     const navigate = useNavigate()
     const { authCheck, checkUserAuth } = useActionCreators(userActions)
     const handleModalClose = (path: To | number) => () => navigate(path as To)
 
-    useEffect(() => {
+    useEffect(() =>
+    {
         checkUserAuth()
-            .unwrap()
             .finally(() => authCheck())
     }, [checkUserAuth, authCheck])
 

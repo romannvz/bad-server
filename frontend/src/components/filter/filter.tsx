@@ -9,19 +9,21 @@ import Select from '../select'
 import styles from './filter.module.scss'
 import { FieldOption } from './helpers/types'
 
-interface Field {
+interface Field
+{
     name?: string
     label: string
     type?: FilterType
     options?: FieldOption[]
 }
-interface FilterSelectedState {
+interface FilterSelectedState
+{
     [key: string]: FieldOption
 }
-interface FilterComponentProps {
+interface FilterComponentProps
+{
     fields: Field[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onFilter: (filters: Record<string, any>) => void
+    onFilter: (filters: Record<string, string | number | { value: string | number }>) => void
     onClear: () => void
     defaultValue?: FiltersOrder | FiltersCustomers
 }
@@ -31,7 +33,8 @@ const Filter = ({
     onFilter,
     defaultValue,
     onClear,
-}: FilterComponentProps) => {
+}: FilterComponentProps) =>
+{
     const formRef = useRef<HTMLFormElement>(null)
 
     const { values, handleChange } = useFormWithValidation(
@@ -41,9 +44,10 @@ const Filter = ({
     const [selects, setSelects] = useState<FilterSelectedState>({})
 
     const renderController = useCallback(
-        (field: Field) => {
+        (field: Field) =>
+        {
             {
-                if (!field.type) {
+                if (!field.type)
                     return (
                         <label
                             key={field.label}
@@ -52,8 +56,8 @@ const Filter = ({
                             {field.label}
                         </label>
                     )
-                }
-                switch (field.type) {
+                switch (field.type)
+                {
                     case FilterType.select:
                         return (
                             field.options && (
@@ -81,7 +85,7 @@ const Filter = ({
                                 key={field.name}
                                 value={
                                     values![
-                                        field.name as keyof typeof values
+                                    field.name as keyof typeof values
                                     ] || ''
                                 }
                                 onChange={handleChange}
@@ -100,19 +104,20 @@ const Filter = ({
         [selects, handleChange, values]
     )
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         onFilter({ ...values, ...selects })
     }
 
-    useEffect(() => {
-        if ((defaultValue as FiltersOrder)?.status) {
+    useEffect(() =>
+    {
+        if ((defaultValue as FiltersOrder)?.status)
+        {
             const status = FILTER_ORDER_TYPES.find(
                 (item) => item.value === (defaultValue as FiltersOrder)?.status
             )
-            if (status) {
-                setSelects({ ...selects, status })
-            }
+            if (status) setSelects(prev => ({ ...prev, status }))
         }
     }, [defaultValue])
 
