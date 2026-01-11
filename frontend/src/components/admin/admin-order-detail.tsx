@@ -60,9 +60,7 @@ export default function AdminOrderDetail()
     useEffect(() =>
     {
         if (!orderData)
-        {
             dispatch(getOrderByNumber(number))
-        }
     }, [dispatch, orderData, number])
 
     const orderHeaders = useMemo(
@@ -128,13 +126,11 @@ export default function AdminOrderDetail()
                 extraClass: styles.admin__gridRowFullWidth,
             },
         ],
-        [orderData]
+        [orderData, navigate]
     )
 
     if (!orderData)
-    {
         return <Preloader />
-    }
 
     return (
         <DetailInfo

@@ -5,7 +5,6 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import fs from 'fs'
 import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
@@ -16,6 +15,7 @@ import {
     orderLimiter,
     uploadLimiter,
 } from './middlewares/rate-limit'
+import { csrfProtection, getCsrfToken } from './middlewares/csrf'
 
 const { PORT = 3000 } = process.env
 const app = express()
@@ -28,73 +28,35 @@ app.use(
     cors({
         origin: CORS_ORIGIN,
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
     })
 )
-
-const tempDir = path.join(__dirname, 'public', 'temp')
-const uploadDir = path.join(__dirname, 'public', 'uploads')
-
-if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true })
-    console.log(`Created temp directory: ${tempDir}`)
-}
-
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
-    console.log(`Created upload directory: ${uploadDir}`)
-}
-
-const altTempDir = path.join(process.cwd(), 'public', 'temp')
-if (!fs.existsSync(altTempDir)) {
-    fs.mkdirSync(altTempDir, { recursive: true })
-    console.log(`Created alternative temp directory: ${altTempDir}`)
-}
-
-const anotherTempDir = '/tmp/uploads'
-if (!fs.existsSync(anotherTempDir)) {
-    fs.mkdirSync(anotherTempDir, { recursive: true })
-    console.log(`Created another temp directory: ${anotherTempDir}`)
-}
-
-const possibleDirs = [
-    // Для Docker контейнера
-    path.join(__dirname, 'public', 'temp'),
-    path.join(__dirname, 'public', 'uploads'),
-    // Для хоста (CI/CD)
-    path.join(process.cwd(), 'backend', 'src', 'public', 'temp'),
-    path.join(process.cwd(), 'backend', 'src', 'public', 'uploads'),
-    // Альтернативные пути
-    '/app/src/public/temp',
-    '/app/src/public/uploads',
-    path.join('/app', 'src', 'public', 'temp'),
-    path.join('/app', 'src', 'public', 'uploads'),
-]
-
-possibleDirs.forEach((dir) => {
-    if (!fs.existsSync(dir)) {
-        try {
-            fs.mkdirSync(dir, { recursive: true })
-            console.log(`Created directory: ${dir}`)
-        } catch (err) {
-            console.log(`Failed to create ${dir}: ${err}`)
-        }
-    }
-})
-
-const hostTempDir = path.join(__dirname, 'public', 'temp')
-if (!fs.existsSync(hostTempDir)) {
-    fs.mkdirSync(hostTempDir, { recursive: true })
-    console.log(`Created temp directory on host: ${hostTempDir}`)
-}
-
-// app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(urlencoded({ extended: true, limit: '10kb' }))
 app.use(json({ limit: '10kb' }))
 
-app.use(apiLimiter)
+app.get('/csrf-token', getCsrfToken, (_req, res) => {
+    res.json({ csrfToken: res.locals.csrfToken })
+})
 
+app.options('*', (_req, res) => {
+    res.header('Access-Control-Allow-Origin', CORS_ORIGIN)
+    res.header('Access-Control-Allow-Credentials', 'true')
+    res.header(
+        'Access-Control-Allow-Methods',
+        'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+    )
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization, X-CSRF-Token'
+    )
+    res.sendStatus(200)
+})
+
+app.use(csrfProtection)
+
+app.use(apiLimiter)
 app.use('/product', apiLimiter)
 app.use('/customers', apiLimiter)
 app.use('/auth/login', authLimiter)
@@ -104,17 +66,17 @@ app.use('/order', orderLimiter)
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.options('*', cors())
 app.use(routes)
+
 app.use(errors())
 app.use(errorHandler)
-
-// eslint-disable-next-line no-console
 
 const bootstrap = async () => {
     try {
         await mongoose.connect(DB_ADDRESS)
-        await app.listen(PORT, () => console.log('ok'))
+        await app.listen(PORT, () =>
+            console.log(`Server started on port ${PORT}`)
+        )
     } catch (error) {
         console.error(error)
     }

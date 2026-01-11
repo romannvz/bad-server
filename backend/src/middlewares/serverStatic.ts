@@ -6,7 +6,7 @@ export default function serveStatic(baseDir: string) {
     return (req: Request, res: Response, next: NextFunction) => {
         const normalizedPath = path
             .normalize(req.path)
-            .replace(/^(\.\.[\/\\])+/, '')
+            .replace(/^(\.\.[/\\])+/, '')
         const filePath = path.join(baseDir, normalizedPath)
 
         const relative = path.relative(baseDir, filePath)

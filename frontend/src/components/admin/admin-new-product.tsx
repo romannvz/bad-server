@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useActionCreators } from '../../services/hooks'
 import { productsActions } from '../../services/slice/products'
-import {
+import
+{
     AppRoute,
     CATEGORY_CLASSES,
     CATEGORY_TYPES,
@@ -18,7 +19,8 @@ import Select from '../select'
 import styles from './admin.module.scss'
 import { ProductFormValues } from './helpers/types'
 
-export default function AdminNewProduct() {
+export default function AdminNewProduct()
+{
     const navigate = useNavigate()
     const formRef = useRef<HTMLFormElement>(null)
     const { values, handleChange, errors, isValid } =
@@ -38,21 +40,25 @@ export default function AdminNewProduct() {
 
     const navigateAdminList = () => navigate(AppRoute.Admin)
 
-    const handleFileChange = (e: SyntheticEvent<HTMLInputElement>) => {
-        if (e.currentTarget.files?.length) {
+    const handleFileChange = (e: SyntheticEvent<HTMLInputElement>) =>
+    {
+        if (e.currentTarget.files?.length)
+        {
             const dataFile = new FormData()
             dataFile.append('file', e.currentTarget.files[0])
 
             uploadImageFile(dataFile)
-                .unwrap()
-                .then((data) => {
+                .then((data) =>
+                {
                     setSelectedFile(data)
                 })
         }
     }
 
-    const handleCreateProduct = async () => {
-        if (!selectedFile || !selectedCategory) {
+    const handleCreateProduct = async () =>
+    {
+        if (!selectedFile || !selectedCategory)
+        {
             console.log('Не выбран файл или категория')
             return
         }
@@ -60,14 +66,15 @@ export default function AdminNewProduct() {
             ...values,
             category: selectedCategory?.title as keyof typeof CATEGORY_CLASSES,
             image: selectedFile,
-            price: values.price ? values.price : null,
+            price: values.price || null,
         }
+
         await createProduct(dataProduct)
-            .unwrap()
             .then(() => navigateAdminList())
             .catch((error) => toast.error(error.message))
     }
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         handleCreateProduct()
     }

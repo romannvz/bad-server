@@ -2,7 +2,6 @@ import fs from 'fs'
 import { randomUUID } from 'crypto'
 import { Request, Express } from 'express'
 import multer, { FileFilterCallback } from 'multer'
-import { join } from 'path'
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
@@ -42,9 +41,7 @@ const fileFilter = (
     file: Express.Multer.File,
     cb: FileFilterCallback
 ) => {
-    if (!types.includes(file.mimetype)) {
-        return cb(null, false)
-    }
+    if (!types.includes(file.mimetype)) return cb(null, false)
 
     return cb(null, true)
 }

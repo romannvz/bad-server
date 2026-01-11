@@ -6,11 +6,13 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useActionCreators } from '../../services/hooks'
-import {
+import
+{
     productsActions,
     productsSelector,
 } from '../../services/slice/products'
-import {
+import
+{
     AppRoute,
     CATEGORY_CLASSES,
     CATEGORY_TYPES,
@@ -22,7 +24,8 @@ import Select from '../select'
 import styles from './admin.module.scss'
 import { ProductFormValues } from './helpers/types'
 
-export default function AdminEditProduct() {
+export default function AdminEditProduct()
+{
     const navigate = useNavigate()
     const { editId } = useParams()
     const { updateProduct, deleteProduct, uploadImageFile } =
@@ -44,64 +47,61 @@ export default function AdminEditProduct() {
     const isValidForm = isValid && Boolean(selectedCategory)
     const navigateAdminList = () => navigate(AppRoute.Admin)
 
-    const handleFileChange = (e: SyntheticEvent<HTMLInputElement>) => {
-        if (e.currentTarget.files?.length) {
+    const handleFileChange = (e: SyntheticEvent<HTMLInputElement>) =>
+    {
+        if (e.currentTarget.files?.length)
+        {
             const dataFile = new FormData()
             dataFile.append('file', e.currentTarget.files[0])
 
             uploadImageFile(dataFile)
-                .unwrap()
-                .then((data) => {
+                .then((data) =>
+                {
                     setSelectedFile(data)
                 })
         }
     }
 
-    useEffect(() => {
+    useEffect(() =>
+    {
         const currentCategory = CATEGORY_TYPES.find(
             (item) => item.title === currentProduct?.category
         )
-        if (currentCategory) {
-            setSelectedCategory(currentCategory)
-        }
-        if (currentProduct) {
+        if (currentCategory) setSelectedCategory(currentCategory)
+        if (currentProduct)
             setValuesForm({
                 description: currentProduct.description,
                 price: currentProduct.price,
                 title: currentProduct.title,
             })
-        }
-    }, [currentProduct])
+    }, [currentProduct, setValuesForm])
 
-    const handleUpdateProduct = async () => {
-        if (!selectedCategory) {
-            return
-        }
+    const handleUpdateProduct = async () =>
+    {
+        if (!selectedCategory) return
         const dataProduct = {
             ...values,
             category: selectedCategory?.title as keyof typeof CATEGORY_CLASSES,
-            image: selectedFile ? selectedFile : undefined,
-            price: values.price ? values.price : null,
+            image: selectedFile || undefined,
+            price: values.price || null,
         }
 
         editId &&
             updateProduct({ data: dataProduct, id: editId })
-                .unwrap()
                 .then(() => navigateAdminList())
                 .catch((error) => toast.error(error.message))
     }
-    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) =>
+    {
         e.preventDefault()
         handleUpdateProduct()
     }
 
-    const handleDeleteProduct = () => {
+    const handleDeleteProduct = () =>
         editId &&
-            deleteProduct(editId)
-                .unwrap()
-                .then(() => navigateAdminList())
-                .catch((error) => toast.error(error.message))
-    }
+        deleteProduct(editId)
+            .then(() => navigateAdminList())
+            .catch((error) => toast.error(error.message))
 
     return (
         <Form

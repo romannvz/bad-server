@@ -3,10 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '@components/button'
 import { useEffect, useRef } from 'react'
 import { useActionCreators, useSelector } from '../../services/hooks'
-import {
-    orderFormActions,
-    orderFormSelector,
-} from '../../services/slice/orderForm'
+import
+    {
+        orderFormActions,
+        orderFormSelector,
+    } from '../../services/slice/orderForm'
 import { AppRoute } from '../../utils/constants'
 import Form, { Input } from '../form'
 import useFormWithValidation from '../form/hooks/useFormWithValidation'
@@ -14,7 +15,8 @@ import { Radio } from '../form/radio'
 import { PaymentFormValues, PaymentType } from './helpers/types'
 import styles from './order.module.scss'
 
-export function OrderAddress() {
+export function OrderAddress()
+{
     const location = useLocation()
     const navigate = useNavigate()
     const { selectOrderInfo } = orderFormSelector
@@ -30,14 +32,16 @@ export function OrderAddress() {
             formRef.current
         )
 
-    useEffect(() => {
+    useEffect(() =>
+    {
         setValuesForm({
             address: orderPersistData.address,
             payment: PaymentType.Online,
         })
-    }, [orderPersistData])
+    }, [orderPersistData, setValuesForm])
 
-    const nextStep = () => {
+    const nextStep = () =>
+    {
         setInfo(values)
         navigate(
             { pathname: AppRoute.OrderContacts },

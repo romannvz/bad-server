@@ -5,22 +5,25 @@ import { useActionCreators } from '../../services/hooks'
 import { userActions, userSelectors } from '../../services/slice/user'
 import { AppRoute } from '../../utils/constants'
 
-export default function AdminPage() {
+export default function AdminPage()
+{
     const { checkUserRoles } = useActionCreators(userActions)
     const isAdmin = useSelector(userSelectors.isAdmin)
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
-    useEffect(() => {
-        checkUserRoles().finally(() => {
+    useEffect(() =>
+    {
+        checkUserRoles().finally(() =>
+        {
             setLoading(false)
         })
-    }, [])
+    }, [checkUserRoles])
 
-    useEffect(() => {
-        if (!loading && !isAdmin) {
+    useEffect(() =>
+    {
+        if (!loading && !isAdmin)
             navigate(AppRoute.Main)
-        }
     }, [loading, isAdmin, navigate])
 
     return <Outlet />

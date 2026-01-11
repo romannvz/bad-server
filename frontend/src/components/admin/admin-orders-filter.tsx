@@ -6,8 +6,10 @@ import { AppRoute } from '../../utils/constants'
 import Filter from '../filter'
 import styles from './admin.module.scss'
 import { ordersFilterFields } from './helpers/ordersFilterFields'
+import { StatusType } from '../../utils/types'
 
-export default function AdminFilterOrders() {
+export default function AdminFilterOrders()
+{
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const [_, setSearchParams] = useSearchParams()
@@ -15,13 +17,22 @@ export default function AdminFilterOrders() {
     const { updateFilter, clearFilters } = useActionCreators(ordersActions)
     const filterOrderOption = useSelector(ordersSelector.selectFilterOption)
 
-    const handleFilter = (filters: Record<string, any>) => {
-        dispatch(updateFilter({ ...filters, status: filters.status.value }))
+    const handleFilter = (filters: Record<string, string | number | { value: string | number }>) =>
+    {
+        const statusValue = filters.status && typeof filters.status === 'object'
+            ? (filters.status as { value: string }).value
+            : filters.status
+
+        dispatch(updateFilter({ ...filters, status: (statusValue as StatusType | '') }))
         const queryParams: { [key: string]: string } = {}
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) {
+        Object.entries(filters).forEach(([key, value]) =>
+        {
+            if (value)
+            {
                 queryParams[key] =
-                    typeof value === 'object' ? value.value : value.toString()
+                    typeof value === 'object' && value !== null && 'value' in value
+                        ? value.value.toString()
+                        : value.toString()
             }
         })
         setSearchParams(queryParams)
@@ -30,7 +41,8 @@ export default function AdminFilterOrders() {
         )
     }
 
-    const handleClearFilters = () => {
+    const handleClearFilters = () =>
+    {
         dispatch(clearFilters())
         setSearchParams({})
         dispatch(fetchOrdersWithFilters({}))

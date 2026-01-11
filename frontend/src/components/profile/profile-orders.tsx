@@ -5,7 +5,6 @@ import TableRow from '@components/table/table-row'
 import { OrderDataList } from '@slices/orders/type'
 import { profileOrdersSelector } from '@slices/profile-orders'
 import { fetchOrdersMeWithFilters } from '@slices/profile-orders/thunk'
-import { useDispatch } from '@store/hooks'
 import clsx from 'clsx'
 import { ChangeEvent, FormEvent, useCallback, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
@@ -14,8 +13,8 @@ import Pagination from '../pagination'
 import usePagination from '../pagination/helpers/usePagination'
 import styles from './profile.module.scss'
 
-export default function ProfileOrders() {
-    const dispatch = useDispatch()
+export default function ProfileOrders()
+{
     const location = useLocation()
     // const orders = useSelector(profileOrdersSelector.selectProfileOrders);
     const [searchParams, setSearchParams] = useSearchParams()
@@ -86,20 +85,21 @@ export default function ProfileOrders() {
             key: 'totalAmount',
         },
     ]
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
         setSearchOrder(e.target.value)
-    }
 
     const handleSearch = useCallback(
-        (e: FormEvent, value: string) => {
+        (e: FormEvent, value: string) =>
+        {
             e.preventDefault()
             const filters: Record<string, unknown> = {}
-            searchParams.forEach((value, key) => {
+            searchParams.forEach((value, key) =>
+            {
                 filters[key] = value
             })
             setSearchParams({ ...filters, search: value })
         },
-        [searchParams, dispatch, setSearchParams]
+        [searchParams, setSearchParams]
     )
 
     return (
@@ -126,7 +126,8 @@ export default function ProfileOrders() {
                 <Button>Найти</Button>
             </form>
             <Table columns={orderColumns} data={orders}>
-                {({ rowData, columnsData }) => {
+                {({ rowData, columnsData }) =>
+                {
                     return (
                         <Link
                             key={rowData.key}
