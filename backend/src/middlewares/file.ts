@@ -13,12 +13,7 @@ const storage = multer.diskStorage({
         _file: Express.Multer.File,
         cb: DestinationCallback
     ) => {
-        const dest = join(
-            process.cwd(),
-            process.env.UPLOAD_PATH_TEMP
-                ? process.env.UPLOAD_PATH_TEMP
-                : 'public/temp'
-        )
+        const dest = join(__dirname, '..', 'public', 'temp')
 
         if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
 

@@ -31,8 +31,8 @@ app.use(
     })
 )
 
-const tempDir = path.join(process.cwd(), 'public', 'temp')
-const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+const tempDir = path.join(__dirname, 'public', 'temp')
+const uploadDir = path.join(__dirname, 'public', 'uploads')
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true })
@@ -44,20 +44,28 @@ if (!fs.existsSync(uploadDir)) {
     console.log(`Created upload directory: ${uploadDir}`)
 }
 
+const altTempDir = path.join(process.cwd(), 'public', 'temp')
+if (!fs.existsSync(altTempDir)) {
+    fs.mkdirSync(altTempDir, { recursive: true })
+    console.log(`Created alternative temp directory: ${altTempDir}`)
+}
+
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true, limit: '10kb' }))
 app.use(json({ limit: '10kb' }))
 
 app.use(apiLimiter)
 
+app.use('/product', apiLimiter)
+app.use('/customers', apiLimiter)
 app.use('/auth/login', authLimiter)
 app.use('/auth/register', authLimiter)
 app.use('/upload', uploadLimiter)
 app.use('/order', orderLimiter)
+
+app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.options('*', cors())
 app.use(routes)
