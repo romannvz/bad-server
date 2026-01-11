@@ -119,7 +119,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
 // Возможно добавление хеша в контроллере регистрации
 userSchema.pre('save', async function hashingPassword(next) {
     try {
-        if (this.isModified('password'))
+        if (this.isModified('password') && !this.password.startsWith('$2'))
             this.password = await bcrypt.hash(this.password, 10)
         next()
     } catch (error) {
@@ -179,19 +179,26 @@ userSchema.statics.findUserByCredentials = async function findByCredentials(
 ) {
     if (!validator.isEmail(email))
         throw new UnauthorizedError('Неправильные почта или пароль')
+
     const user = await this.findOne({
         email: validator.normalizeEmail(email),
     }).select('+password')
-    if (!user || !user.password) {
+
+    if (!user || !user.password)
         throw new UnauthorizedError('Неправильные почта или пароль')
-    }
+
     const passwdMatch = await bcrypt.compare(password, user.password)
-    if (!passwdMatch) {
-        return Promise.reject(
-            new UnauthorizedError('Неправильные почта или пароль')
-        )
+    if (passwdMatch) return user
+
+    const md5Hash = crypto.createHash('md5').update(password).digest('hex')
+    if (md5Hash === user.password) {
+        const bcryptHash = await bcrypt.hash(password, 10)
+        user.password = bcryptHash
+        await user.save()
+        return user
     }
-    return user
+
+    throw new UnauthorizedError('Неправильные почта или пароль')
 }
 
 userSchema.methods.calculateOrderStats = async function calculateOrderStats() {
