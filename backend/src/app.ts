@@ -1,3 +1,4 @@
+import helmet from 'helmet'
 import { errors } from 'celebrate'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
@@ -35,6 +36,7 @@ app.use(
 
 app.use(urlencoded({ extended: true, limit: '10kb' }))
 app.use(json({ limit: '10kb' }))
+app.use(helmet())
 
 app.get('/csrf-token', getCsrfToken, (_req, res) => {
     res.json({ csrfToken: res.locals.csrfToken })

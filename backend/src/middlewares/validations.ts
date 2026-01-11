@@ -37,6 +37,7 @@ export const validateOrderBody = celebrate({
         }),
         phone: Joi.string()
             .required()
+            .pattern(phoneRegExp)
             .custom((value, helpers) => {
                 if (!phoneRegExp.test(value))
                     return helpers.error('string.pattern.base')
