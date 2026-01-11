@@ -14,7 +14,7 @@ docker compose up -d
 
 ----
 
-[Репозиторий GitHub](https://github.com/romannvz/bad-server)
+https://github.com/romannvz/bad-server
 
 Васильев Роман, когорта 35, курс Фулстек-разработчик
 
