@@ -11,6 +11,9 @@ export const csrfProtection = (
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next()
 
     if (req.path === '/csrf-token') return next()
+    
+    if (req.path === '/auth/register' || req.path === '/auth/login')
+        return next()
 
     const tokenFromHeader = req.headers['x-csrf-token'] as string
     const tokenFromCookie = req.cookies['csrf-token']
