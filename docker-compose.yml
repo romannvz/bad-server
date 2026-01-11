@@ -30,7 +30,9 @@ services:
       - backend/.env
     volumes:
       - ./backend/src:/app/src
-      - public:/app/src/public
+      - ./backend/public/temp:/app/src/public/temp
+      - ./backend/public/uploads:/app/src/public/uploads
+      - backend_images:/app/src/public/images
     ports:
       - 3000:3000
     networks:
@@ -45,7 +47,7 @@ services:
       - 80:80
     volumes:
       - frontend:/var/app
-      - public:/var/public
+      - ./backend/public:/app/src/public
     depends_on:
       - frontend
       - backend
@@ -54,7 +56,8 @@ services:
 
 volumes:
   frontend:
-  public:
+  backend_images:
+  # public:
   db:
 
 networks:

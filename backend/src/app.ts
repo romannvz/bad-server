@@ -56,6 +56,37 @@ if (!fs.existsSync(anotherTempDir)) {
     console.log(`Created another temp directory: ${anotherTempDir}`)
 }
 
+const possibleDirs = [
+    // Для Docker контейнера
+    path.join(__dirname, 'public', 'temp'),
+    path.join(__dirname, 'public', 'uploads'),
+    // Для хоста (CI/CD)
+    path.join(process.cwd(), 'backend', 'src', 'public', 'temp'),
+    path.join(process.cwd(), 'backend', 'src', 'public', 'uploads'),
+    // Альтернативные пути
+    '/app/src/public/temp',
+    '/app/src/public/uploads',
+    path.join('/app', 'src', 'public', 'temp'),
+    path.join('/app', 'src', 'public', 'uploads'),
+]
+
+possibleDirs.forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+        try {
+            fs.mkdirSync(dir, { recursive: true })
+            console.log(`Created directory: ${dir}`)
+        } catch (err) {
+            console.log(`Failed to create ${dir}: ${err}`)
+        }
+    }
+})
+
+const hostTempDir = path.join(__dirname, 'public', 'temp')
+if (!fs.existsSync(hostTempDir)) {
+    fs.mkdirSync(hostTempDir, { recursive: true })
+    console.log(`Created temp directory on host: ${hostTempDir}`)
+}
+
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 
